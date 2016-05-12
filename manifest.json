@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+
+  "name": "Kanrello",
+  "description": "Kanban Board for Trello",
+  "version": "0.1",
+  "author": "Abhiash Srivastava",
+  
+  "icons": {
+    "128": "bulletin_board.png"
+  },
+  
+  "content_scripts": [{
+    "matches": ["*://trello.com/*"],
+    "js":["contentscript.js"]
+  }],
+  
+  "background": {
+    "scripts": [ "background.js"]
+  },
+  
+  "permissions": [
+    "*://trello.com/*", "tabs", "webNavigation", "storage"
+  ],
+    
+    "web_accessible_resources": [
+        "css/layout.css"
+
+    ]
+}

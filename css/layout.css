@@ -1,0 +1,47 @@
+#board.kanrello{
+    overflow-y:scroll;
+}
+#board.kanrello .list-swim-lane{
+    position:relative;
+    z-index: 100;
+    width:100%;
+    overflow-y: scoll;
+    overflow-x: hidden;
+    transition:all ease-in-out 0.2s;
+    opacity: 0;
+}
+#board.kanrello .list-swim-lane.show{
+    opacity:1;
+}
+#board.kanrello .list-lane-bg{
+    position: absolute;
+    z-index: -100;
+    width: 100%;
+    padding:0;
+}
+#board.kanrello .list-wrapper{
+    margin:0 !important;
+    border: 1px solid grey;
+}
+#board.kanrello .list-card:hover .list-card-operation{
+    visibility: visible;
+}
+#board.kanrello .list-card:hover {
+    background:#e6e6e6;
+}
+#board.kanrello .active-card{
+    background:#ccc;
+}
+#board.kanrello .list.js-list-content{
+    max-height: none;
+}
+#board.kanrello .list-cards{
+    padding:0 !important;
+    margin:0 !important;
+}
+#board.kanrello .list-cards > .list-card{
+    display:none;
+}
+.boards-drawer.is-shown{
+    z-index: 2000 !important;
+}
