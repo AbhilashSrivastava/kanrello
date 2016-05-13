@@ -34,7 +34,6 @@ var dragging = {};
 var lanes_elements = [];
 var timer = null;
 var label_maps = {};
-var lane_offsets ={};
 function insertCss() {
     if (document.getElementById('layoutcss') === null) {
         var css = document.createElement('link');
@@ -75,7 +74,9 @@ function readyCheck(){
     request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     request.onload = function(data) {
         if(data.target.status === 200){
-            labels = JSON.parse(data.target.response).labelNames;
+            JSON.parse(data.target.response).labels.forEach(function(elem){
+                labels[elem.color] = '';
+            });
             label_maps = JSON.parse(data.target.response).labels;
             main_labels = labels;
             insertButton();
@@ -91,7 +92,7 @@ function setupMainBoard(){
     var lane_inset = findLaneLength();
     var lane_height = (lane_inset * 3);
     var lanes = Object.keys(labels).slice(0);
-    lanes.push('white');
+    lanes.unshift('white');
     default_lanes = lanes;
     createLanes(lanes, lane_height);
     console.log(labels);
@@ -117,14 +118,6 @@ function createLanes(lanes, lane_height){
         counter = counter + lane_height;
     });
     getCards();
-    saveLaneOffset();
-}
-function saveLaneOffset(){
-    default_lanes.forEach(function(elem){
-        lane_offsets[elem] = {from:'', to:''};
-        lane_offsets[elem].from = $('.label-container-' + elem ).offset().top;
-        lane_offsets[elem].to = lane_offsets[elem].from + (findLaneLength()*3);
-    });
 }
 function bindEvents(){
     var from_list = null;
@@ -142,9 +135,9 @@ function bindEvents(){
             if($('.placeholder.list-card').parent()[0] && $('.placeholder.list-card').parent().parent()[0] && $('.placeholder.list-card').parent().parent().parent()[0]){
                 to_list = $('.placeholder.list-card').parent().parent().parent()[0];
             }
-            if(from_list === to_list && (pos != $(e.currentTarget).offset().top)){
+            if(from_list === to_list && (inLane() != e.currentTarget.dataset['label'])){
                 pos = $(e.currentTarget).offset().top;
-                var dragged_lane = inLane(pos);
+                var dragged_lane = inLane();
                 var current_lane = e.currentTarget.dataset['label'];
                 if(dragged_lane != current_lane){
                     changeLane(e, dragged_lane, from_list, to_list);
@@ -163,6 +156,10 @@ function bindEvents(){
             }, 50);
         }
     });
+    $('.list-swim-lane').on('mouseover', function(e){
+        $('.list-swim-lane').removeClass('hovering');
+        $(e.currentTarget).addClass('hovering');
+    })
 }
 function getLabelIdFromLabelName(name, label_maps){
     for(var map in label_maps){
@@ -176,6 +173,19 @@ function changeLane(elem, new_label, from_list, to_list){
     var old_label_id = getLabelIdFromLabelName(elem.currentTarget.dataset['label'],label_maps);
     var new_label_id = getLabelIdFromLabelName(new_label, window.label_maps);
     setTimeout(function(){
+        if((elem.currentTarget.dataset['label'] === 'white') && new_label){
+            ch_elem  = elem.currentTarget.getElementsByClassName('js-card-labels')[0];
+            var node_to_append =  document.createElement('span');
+            node_to_append.classList.add('card-label');
+            node_to_append.classList.add('mod-card-front');
+            node_to_append.innerHTML = "&nbsp;";
+            node_to_append.setAttribute('title', "");
+            ch_elem.appendChild(node_to_append);
+            ch_elem.getElementsByClassName('card-label')[0].classList.add('card-label-' + new_label);
+            elem.currentTarget.dataset['label'] = new_label;
+            createLabel(card_id, new_label_id, from_list, to_list);
+            return;
+        }
         var ch_elem = elem.currentTarget.getElementsByClassName('card-label')[0];
         ch_elem.classList.remove('card-label-' + elem.currentTarget.dataset['label']);
         if(new_label){
@@ -183,7 +193,7 @@ function changeLane(elem, new_label, from_list, to_list){
         }
         elem.currentTarget.dataset['label'] = new_label;
         deleteAndCreateLabel(card_id, old_label_id, new_label_id, from_list, to_list)
-    }, 50);
+    }, 25);
 }
 function deleteAndCreateLabel(card_id, old_label_id, new_label_id, from_list, to_list){
     var trelloCardAPI_1 = 'https://trello.com/1/cards/' + card_id + '/idLabels/' + old_label_id + '?token=' + document.cookie.split('token=')[1].split(';')[0];
@@ -215,12 +225,11 @@ function createLabel(card_id, new_label_id, from_list, to_list){
     request_2.send();
 }
 
-function inLane(elem_pos){
-    for(var lane in lane_offsets){
-        if((elem_pos > lane_offsets[lane].from) && (elem_pos < lane_offsets[lane].to)){
-            return lane;
-        }
+function inLane(){
+    if($('.list-swim-lane.hovering')[0]){
+        return $('.list-swim-lane.hovering').data('label');
     }
+    return null;
 }
 function setupEmptyClones(){
     Object.keys(main_labels).forEach(function(label){
