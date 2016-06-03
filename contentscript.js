@@ -46,17 +46,19 @@ function insertCss() {
 }
 
 function insertButton() {
-    var btnNotifications = document.getElementsByClassName('header-notifications')[0];
-    var btnView = document.createElement('a');
+	if(document.getElementById('kanrello_toggle') == null){
+		var btnNotifications = document.getElementsByClassName('header-notifications')[0];
+		var btnView = document.createElement('a');
 
-    btnView.id = 'layout-button';
-    btnView.setAttribute('class', 'header-btn header-notifications js-toggle-view');
-    btnView.setAttribute('id', 'kanrello_toggle')
-    btnView.setAttribute('title', 'Toggle Layout');
-    btnView.setAttribute('href', '#');
-    btnView.innerHTML = '<span class="header-btn-icon icon-lg icon-list light"></span>';
-    btnView.onclick = setupMainBoard;
-    btnNotifications.parentNode.insertBefore(btnView, btnNotifications.nextSibling);
+		btnView.id = 'layout-button';
+		btnView.setAttribute('class', 'header-btn header-notifications js-toggle-view');
+		btnView.setAttribute('id', 'kanrello_toggle')
+		btnView.setAttribute('title', 'Toggle Layout');
+		btnView.setAttribute('href', '#');
+		btnView.innerHTML = '<span class="header-btn-icon icon-lg icon-list light"></span>';
+		btnView.onclick = setupMainBoard;
+		btnNotifications.parentNode.insertBefore(btnView, btnNotifications.nextSibling);		
+	}
 }
 
 var trelloAPI = 'https://trello.com/1/Boards/';
