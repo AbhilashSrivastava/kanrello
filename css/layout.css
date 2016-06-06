@@ -24,6 +24,7 @@
     margin:0 !important;
     border: 1px solid grey;
     border-left:none;
+    display: table-cell;
 }
 #board.kanrello .list-card{
     margin:10px;

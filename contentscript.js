@@ -128,7 +128,6 @@ function bindEvents(){
     window.flag_once = false;
     $('.list-card.js-member-droppable').on('mousedown', function(e){
         from_list = $(e.currentTarget).parent().parent().parent()[0];
-        console.log('this');
         window.flag_once = true;
     })
     $('.list-card.js-member-droppable').on('mouseup', function(e){
@@ -309,15 +308,15 @@ function detach(node, papaji, ref) {
 }
 
 function findLaneLength(){
-    // var max_height = 0;
-    // var elements = document.getElementsByClassName('list-card');
-    // [].forEach.call(elements, function (elem) {
-    //     if(elem.offsetHeight > max_height){
-    //         max_height = elem.offsetHeight;
-    //     }
-    // });
-    // console.log(max_height);
-    // return max_height;
+    var max_height = 0;
+    var elements = document.getElementsByClassName('list-card');
+    [].forEach.call(elements, function (elem) {
+        if(elem.offsetHeight > max_height){
+            max_height = elem.offsetHeight;
+        }
+    });
+    console.log(max_height);
+    //return max_height;
     return 100;
 }
 
