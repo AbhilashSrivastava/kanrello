@@ -27,7 +27,7 @@
     display: table-cell;
 }
 #board.kanrello .list-card{
-    margin:10px;
+    margin:5px;
 }
 #board.kanrello .list-card:hover .list-card-operation{
     visibility: visible;
