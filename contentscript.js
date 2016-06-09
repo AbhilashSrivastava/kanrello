@@ -58,14 +58,26 @@ function insertButton() {
 		btnView.innerHTML = '<span class="header-btn-icon icon-lg icon-list light"></span>';
 		btnView.onclick = setupMainBoard;
 		btnNotifications.parentNode.insertBefore(btnView, btnNotifications.nextSibling);		
+	}else{
+		//if button exists, re fill data in cards and default_lanes globs which resets on 
+		setupEmptyClones();
+		var labels = main_labels;
+	    setupEmptyClones();
+	    var ar_len = Object.keys(labels);
+	    var lane_inset = findLaneLength();
+	    var lane_height = (lane_inset * 3);
+	    var lanes = Object.keys(labels).slice(0);
+	    lanes.unshift('white');
+	    default_lanes = lanes;
 	}
 }
 
 var trelloAPI = 'https://trello.com/1/Boards/';
-if (document.URL.indexOf('/b/') !== -1) {
+if (document.URL.indexOf('/b/') !== -1 ) {
     timer = setInterval(readyCheck, 300);
 }
 function readyCheck(){
+	console.log('called');
     var start_count = document.URL.indexOf('/b/') + 2;
     var board_id = document.URL.substring(start_count).split('/')[1];
     clearInterval(timer);
@@ -87,17 +99,18 @@ function readyCheck(){
     request.send();
 }
 function setupMainBoard(){
-    $('#board').addClass('kanrello');
-    var labels = main_labels;
-    setupEmptyClones();
-    var ar_len = Object.keys(labels);
-    var lane_inset = findLaneLength();
-    var lane_height = (lane_inset * 3);
-    var lanes = Object.keys(labels).slice(0);
-    lanes.unshift('white');
-    default_lanes = lanes;
-    createLanes(lanes, lane_height);
-    console.log(labels);
+	if(!$('#board').hasClass('kanrello')){
+		$('#board').addClass('kanrello');
+	    var labels = main_labels;
+	    setupEmptyClones();
+	    var ar_len = Object.keys(labels);
+	    var lane_inset = findLaneLength();
+	    var lane_height = (lane_inset * 3);
+	    var lanes = Object.keys(labels).slice(0);
+	    lanes.unshift('white');
+	    default_lanes = lanes;
+	    createLanes(lanes, lane_height);
+	}  
 }
 function createLanes(lanes, lane_height){
     var counter = document.getElementsByClassName('list-header')[0].offsetHeight;
@@ -127,6 +140,25 @@ function bindEvents(){
     var to_list = null;
     var pos = null;
     window.flag_once = false;
+
+    /// vertical scroll issue. yet to fix.
+    // $('.list-card.js-member-droppable').sortable(
+    // {
+    //     start: function(){
+    //         var offset = $(this).offset();
+    //         console.log(offset);
+    //         // var sct = 0;
+    //         // var yPos = offset.top;
+    //         // var boardHgt = $('#board').outerHeight();
+    //         // console.log(yPos, boardHgt, $('#board.kanrello')[0].scrollHeight);
+    //         // if(yPos > boardHgt && yPos <= $('#board.kanrello')[0].scrollHeight){
+    //         // 	sct = Math.floor(yPos - boardHgt);
+    //         // 	sct = sct + $(this).outerHeight();
+    //         // 	console.log($(this).outerHeight());
+    //         // 	$('#board.kanrello').scrollTop(sct);
+    //         // }
+    //     }
+    // });
     $('.list-card.js-member-droppable').on('mousedown', function(e){
         from_list = $(e.currentTarget).parent().parent().parent()[0];
         window.flag_once = true;
@@ -137,9 +169,9 @@ function bindEvents(){
             if($('.placeholder.list-card').parent()[0] && $('.placeholder.list-card').parent().parent()[0] && $('.placeholder.list-card').parent().parent().parent()[0]){
                 to_list = $('.placeholder.list-card').parent().parent().parent()[0];
             }
-            if(from_list === to_list && (inLane() != e.currentTarget.dataset['label'])){
+            if(from_list === to_list && (inLaneTest() != e.currentTarget.dataset['label'])){
                 pos = $(e.currentTarget).offset().top;
-                var dragged_lane = inLane();
+                var dragged_lane = inLaneTest();
                 var current_lane = e.currentTarget.dataset['label'];
                 if(dragged_lane != current_lane){
                     changeLane(e, dragged_lane, from_list, to_list);
@@ -153,15 +185,16 @@ function bindEvents(){
                     renderList(from_list);
                     renderList(to_list);
                     from_list = null;
-                    to_list = null                
+                    to_list = null;               
                 }
             }, 50);
         }
     });
+
     $('.list-swim-lane').on('mouseover', function(e){
         $('.list-swim-lane').removeClass('hovering');
         $(e.currentTarget).addClass('hovering');
-    })
+    });
 }
 function getLabelIdFromLabelName(name, label_maps){
     for(var map in label_maps){
@@ -171,31 +204,31 @@ function getLabelIdFromLabelName(name, label_maps){
     }
 }
 function changeLane(elem, new_label, from_list, to_list){
-    var card_id = $(elem.currentTarget).find('.js-card-name').attr('href').split('/')[2];
-    var old_label_id = getLabelIdFromLabelName(elem.currentTarget.dataset['label'],label_maps);
-    var new_label_id = getLabelIdFromLabelName(new_label, window.label_maps);
-    setTimeout(function(){
-        if((elem.currentTarget.dataset['label'] === 'white') && new_label){
-            ch_elem  = elem.currentTarget.getElementsByClassName('js-card-labels')[0];
-            var node_to_append =  document.createElement('span');
-            node_to_append.classList.add('card-label');
-            node_to_append.classList.add('mod-card-front');
-            node_to_append.innerHTML = "&nbsp;";
-            node_to_append.setAttribute('title', "");
-            ch_elem.appendChild(node_to_append);
-            ch_elem.getElementsByClassName('card-label')[0].classList.add('card-label-' + new_label);
-            elem.currentTarget.dataset['label'] = new_label;
-            createLabel(card_id, new_label_id, from_list, to_list);
-            return;
-        }
-        var ch_elem = elem.currentTarget.getElementsByClassName('card-label')[0];
-        ch_elem.classList.remove('card-label-' + elem.currentTarget.dataset['label']);
-        if(new_label){
-            ch_elem.classList.add('card-label-' + new_label);    
-        }
-        elem.currentTarget.dataset['label'] = new_label;
-        deleteAndCreateLabel(card_id, old_label_id, new_label_id, from_list, to_list)
-    }, 25);
+		var card_id = $(elem.currentTarget).find('.js-card-name').attr('href').split('/')[2];
+	    var old_label_id = getLabelIdFromLabelName(elem.currentTarget.dataset['label'],label_maps);
+	    var new_label_id = getLabelIdFromLabelName(new_label, window.label_maps);
+	    setTimeout(function(){
+	        if((elem.currentTarget.dataset['label'] === 'white') && new_label){
+	            ch_elem  = elem.currentTarget.getElementsByClassName('js-card-labels')[0];
+	            var node_to_append =  document.createElement('span');
+	            node_to_append.classList.add('card-label');
+	            node_to_append.classList.add('mod-card-front');
+	            node_to_append.innerHTML = "&nbsp;";
+	            node_to_append.setAttribute('title', "");
+	            ch_elem.appendChild(node_to_append);
+	            ch_elem.getElementsByClassName('card-label')[0].classList.add('card-label-' + new_label);
+	            elem.currentTarget.dataset['label'] = new_label;
+	            createLabel(card_id, new_label_id, from_list, to_list);
+	            return;
+	        }
+	        var ch_elem = elem.currentTarget.getElementsByClassName('card-label')[0];
+	        ch_elem.classList.remove('card-label-' + elem.currentTarget.dataset['label']);
+	        if(new_label){
+	            ch_elem.classList.add('card-label-' + new_label);    
+	        }
+	        elem.currentTarget.dataset['label'] = new_label;
+	        deleteAndCreateLabel(card_id, old_label_id, new_label_id, from_list, to_list)
+	    }, 25);
 }
 function deleteAndCreateLabel(card_id, old_label_id, new_label_id, from_list, to_list){
     var trelloCardAPI_1 = 'https://trello.com/1/cards/' + card_id + '/idLabels/' + old_label_id + '?token=' + document.cookie.split('token=')[1].split(';')[0];
@@ -233,6 +266,14 @@ function inLane(){
     }
     return null;
 }
+
+function inLaneTest(){
+	if($('.list-card.placeholder')[0]){
+		return $('.list-card.placeholder').parents('.list-swim-lane').data('label');
+	}
+	else return null;
+}
+
 function setupEmptyClones(){
     Object.keys(main_labels).forEach(function(label){
         cards[label] = [];
@@ -247,13 +288,13 @@ function rearrangeCards(list){
         var list_cards = $(list).find('.list-card.js-member-droppable');
 }
 function renderList(list){
-        hideCards();
-        var list_cards  = $(list).find('.list-card.js-member-droppable');
-        if(list_cards.length){
-            iterateAndStoreCards(list_cards);    
-        }
-        detachAndAttach(list.getElementsByClassName('list-cards')[0]);
-        showCards();
+	hideCards();
+    var list_cards  = $(list).find('.list-card.js-member-droppable');
+    if(list_cards.length){
+        iterateAndStoreCards(list_cards);    
+    }
+    detachAndAttach(list.getElementsByClassName('list-cards')[0]);
+    showCards();
 }
 function hideCards(){
     $('.list-swim-lane').removeClass('show');
@@ -316,7 +357,6 @@ function findLaneLength(){
             max_height = elem.offsetHeight;
         }
     });
-    console.log(max_height);
     //return max_height;
     return 100;
 }
