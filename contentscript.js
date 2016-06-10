@@ -87,17 +87,23 @@ function readyCheck(){
     request.send();
 }
 function setupMainBoard(){
-    $('#board').addClass('kanrello');
-    var labels = main_labels;
-    setupEmptyClones();
-    var ar_len = Object.keys(labels);
-    var lane_inset = findLaneLength();
-    var lane_height = (lane_inset * 3);
-    var lanes = Object.keys(labels).slice(0);
-    lanes.unshift('white');
-    default_lanes = lanes;
-    createLanes(lanes, lane_height);
-    console.log(labels);
+    if($('body').hasClass('kanrello-plugin')){
+        location.reload();
+    }
+    else{
+        $('body').addClass('kanrello-plugin');
+        $('#board').addClass('kanrello');
+        var labels = main_labels;
+        setupEmptyClones();
+        var ar_len = Object.keys(labels);
+        var lane_inset = findLaneLength();
+        var lane_height = (lane_inset * 3);
+        var lanes = Object.keys(labels).slice(0);
+        lanes.unshift('white');
+        default_lanes = lanes;
+        createLanes(lanes, lane_height);        
+    }
+
 }
 function createLanes(lanes, lane_height){
     var counter = document.getElementsByClassName('list-header')[0].offsetHeight;
