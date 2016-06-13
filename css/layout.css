@@ -61,3 +61,26 @@
 .boards-drawer.is-shown{
     z-index: 2000 !important;
 }
+#board.kanrello .card-label.mod-card-front{
+    float: left;
+    height: 17px;
+    margin: 0 3px 3px 0;
+    padding: 0 3px;
+    min-width: 55px;
+    color: white;
+    font-size: 10px;
+    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+    box-shadow: none;
+    text-shadow: none;
+    font-weight: bold;
+    position: relative;
+    text-overflow: ellipsis;
+    text-align: center;
+    line-height: 16px;  
+}
+#kanrello_toggle .header-btn-icon{
+    border-radius:5px;
+}
+body.kanrello-plugin #kanrello_toggle .header-btn-icon{
+    background:#61bd4f;
+}
