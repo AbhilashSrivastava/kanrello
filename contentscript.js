@@ -168,14 +168,15 @@ function bindEvents(){
         window.flag_once = true;
     })
     $('.list-card.js-member-droppable').on('mouseup', function(e){
+    	console.log($(e.currentTarget).offset().top)
         if(window.flag_once){
             window.flag_once = false;
             if($('.placeholder.list-card').parent()[0] && $('.placeholder.list-card').parent().parent()[0] && $('.placeholder.list-card').parent().parent().parent()[0]){
                 to_list = $('.placeholder.list-card').parent().parent().parent()[0];
             }
-            if(from_list === to_list && (inLaneTest() != e.currentTarget.dataset['label'])){
+            if(from_list === to_list && (inLaneTest(e) != e.currentTarget.dataset['label'])){
                 pos = $(e.currentTarget).offset().top;
-                var dragged_lane = inLaneTest();
+                var dragged_lane = inLaneTest(e);
                 var current_lane = e.currentTarget.dataset['label'];
                 if(dragged_lane != current_lane){
                     changeLane(e, dragged_lane, from_list, to_list);
@@ -196,6 +197,7 @@ function bindEvents(){
     });
 
     $('.list-swim-lane').on('mouseover', function(e){
+    	console.log('hovered');
         $('.list-swim-lane').removeClass('hovering');
         $(e.currentTarget).addClass('hovering');
     });
@@ -271,10 +273,21 @@ function inLane(){
     return null;
 }
 
-function inLaneTest(){
-	if($('.list-card.placeholder')[0]){
+function inLaneTest(e){
+	if($('.list-card.placeholder')[0] && $('.list-card.placeholder').parents('.list-swim-lane').hasClass('hovering')){ /// when hovering class and placeholder in same swimlane
 		return $('.list-card.placeholder').parents('.list-swim-lane').data('label');
 	}
+	else if($('.list-swim-lane.hovering')[0] && $('.list-card.placeholder')[0]){ //when hovering class and placeholder in different swimlanes
+		if($('.list-swim-lane.hovering').data('label') == e.currentTarget.dataset['label']){ // hovering class is on current lane itself. then prefer placeholder
+			return $('.list-card.placeholder').parents('.list-swim-lane').data('label');
+		}else{
+			 return $('.list-swim-lane.hovering').data('label'); /// hovering class and placeholder are in different swimlanes. prefer hovering
+		} 
+    }
+	else if($('.list-card.placeholder')[0]){
+		return $('.list-card.placeholder').parents('.list-swim-lane').data('label');
+	}
+	
 	else return null;
 }
 
